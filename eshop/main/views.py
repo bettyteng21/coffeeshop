@@ -1,28 +1,106 @@
 from django.shortcuts import render, redirect
-from main import models
+from .models import *
 from django.contrib import messages
 from . import forms
+from django.http import JsonResponse
+import json
 
 def index(request):
+
+	if request.user.is_authenticated:
+		customer = request.user.customer
+		order, created = Order.objects.get_or_create(customer=customer, complete=False)
+		items = order.orderitem_set.all()
+		cartItems = order.get_cart_items
+	else:
+		items=[]
+		order = {'get_cart_total':0, 'get_cart_items':0}
+		cartItems = order['get_cart_items']
+
+
 	if request.method == 'POST':
 		order = request.POST.get('order')
 		if order== "Order by name":
-			beans = models.Beans.objects.all().order_by('name')
+			beans = Beans.objects.all().order_by('name')
 		elif order== "Order by roast":
-			beans = models.Beans.objects.all().order_by('roast')
+			beans = Beans.objects.all().order_by('roast')
 		else:
-			beans = models.Beans.objects.all().order_by('flavor_detail')
+			beans = Beans.objects.all().order_by('flavor_detail')
 	else:
-		beans = models.Beans.objects.all()
+		beans = Beans.objects.all()
 		# messages.add_message(request, messages.WARNING, "not received")
 	return render(request, "shop/index.html", locals())
 
+def cart(request):
+
+	if request.user.is_authenticated:
+		customer = request.user.customer
+		order, created = Order.objects.get_or_create(customer=customer, complete=False)
+		items = order.orderitem_set.all()
+		cartItems = order.get_cart_items
+	else:
+		items=[]
+		order = {'get_cart_total':0, 'get_cart_items':0}
+		cartItems = order['get_cart_items']
+
+	context = {'items':items, 'order':order, 'cartItems': cartItems}
+	return render(request, 'shop/cart.html', context)
+
+def checkout(request):
+	if request.user.is_authenticated:
+		customer = request.user.customer
+		order, created = Order.objects.get_or_create(customer=customer, complete=False)
+		items = order.orderitem_set.all()
+		cartItems = order.get_cart_items
+	else:
+		items=[]
+		order = {'get_cart_total':0, 'get_cart_items':0}
+		cartItems = order['get_cart_items']
+
+	context = {'items':items, 'order':order, 'cartItems': cartItems}
+	return render(request, 'shop/checkout.html', context)
+
+def updateItem(request):
+	data = json.loads(request.body)
+	productId = data['productId']
+	action = data['action']
+	print('Action:', action)
+	print('Product:', productId)
+
+	customer = request.user.customer
+	product = Beans.objects.get(id=productId)
+	order, created = Order.objects.get_or_create(customer=customer, complete=False)
+
+	orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
+
+	if action == 'add':
+		orderItem.quantity = (orderItem.quantity + 1)
+	elif action == 'remove':
+		orderItem.quantity = (orderItem.quantity - 1)
+
+	orderItem.save()
+	if orderItem.quantity <= 0:
+		orderItem.delete()
+
+	return JsonResponse('Item was added', safe=False)
 
 def bean_detail(request, beanno=0):
+
+	if request.user.is_authenticated:
+		customer = request.user.customer
+		order, created = Order.objects.get_or_create(customer=customer, complete=False)
+		items = order.orderitem_set.all()
+		cartItems = order.get_cart_items
+	else:
+		items=[]
+		order = {'get_cart_total':0, 'get_cart_items':0}
+		cartItems = order['get_cart_items']
+	
+
 	if beanno==0:
 		return redirect('/')
 		
-	beans = models.Beans.objects.get(id=beanno)
+	beans = Beans.objects.get(id=beanno)
 	return render(request, "shop/bean_detail.html", locals())
 
 
@@ -34,7 +112,7 @@ def roast(request):
 		if form.is_valid():
 			# messages.add_message(request, messages.WARNING, "send roast_form success")
 			roast = request.POST['roast']
-			selected_beans = models.Beans.objects.filter(roast=roast)
+			selected_beans = Beans.objects.filter(roast=roast)
 	else:
 		form = forms.RoastForm()
 
@@ -61,10 +139,10 @@ def flavor(request):
 			if roast == '#':
 				# there isn't any input from the previous pages
 				# messages.add_message(request, messages.WARNING, "no roast")
-				selected_beans = models.Beans.objects.filter(flavor=flavor)
+				selected_beans = Beans.objects.filter(flavor=flavor)
 			else:
 				# messages.add_message(request, messages.WARNING, "has roast")
-				selected_beans = models.Beans.objects.filter(roast=roast, flavor=flavor)
+				selected_beans = Beans.objects.filter(roast=roast, flavor=flavor)
 	else:
 		form = forms.FlavorForm()
 
@@ -102,14 +180,14 @@ def flavor_detail(request):
 				# there isn't any input from the previous pages
 				# messages.add_message(request, messages.WARNING, "no roast or flavor")
 				if roast=='#' and flavor=='#':
-					selected_beans = models.Beans.objects.filter(flavor_detail=flavor_detail)
+					selected_beans = Beans.objects.filter(flavor_detail=flavor_detail)
 				elif roast=='#':
-					selected_beans = models.Beans.objects.filter(flavor=flavor, flavor_detail=flavor_detail)
+					selected_beans = Beans.objects.filter(flavor=flavor, flavor_detail=flavor_detail)
 				else:
-					selected_beans = models.Beans.objects.filter(roast=roast, flavor_detail=flavor_detail)
+					selected_beans = Beans.objects.filter(roast=roast, flavor_detail=flavor_detail)
 			else:
 				# messages.add_message(request, messages.WARNING, "has roast")
-				selected_beans = models.Beans.objects.filter(roast=roast, flavor=flavor, flavor_detail=flavor_detail)
+				selected_beans = Beans.objects.filter(roast=roast, flavor=flavor, flavor_detail=flavor_detail)
 	else:
 		if flavor=='Berry':
 			form = forms.FlavorBerryForm()

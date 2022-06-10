@@ -1,11 +1,14 @@
 {% load static %}
 
+
 <div class="col-md-12 px-0" align="center" style="background-color: #fff4de;">
   <a href="/"><img src="{% static 'logo/banner.png' %}" height="250px"></a>
 </div>
+
 <div class="container">
   <nav class="navbar navbar-expand-lg navbar-light">
-  <a class="navbar-brand" href="/">CABE</a>
+  <a class="navbar-brand" href="{% url 'store' %}">CABE</a>
+
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -19,20 +22,18 @@
         <a class="nav-link" href="/roast/">Choose Bean<span class="sr-only"></span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Shop</a>
+        <a class="nav-link" href="{% url 'store' %}">Shop</a>
       </li>
-      <!-- <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Dropdown
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="#">Action</a>
-          <a class="dropdown-item" href="#">Another action</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
-        </div>
-      </li> -->
     </ul>
+    <div class="form-inline my-2 my-lg-0">
+    <a href="/" class="btn btn-warning">Login</a>
+
+    <a href="{% url 'cart' %}">
+      <img id="cart-icon" src="{% static 'logo/cart.png' %}">
+    </a>
+    <p id="cart-total">{{cartItems}}</p>
+
+    </div>
   </div>
 </nav>
 </div>

@@ -19,7 +19,10 @@ import main.views as shop
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', shop.index),
+    path('', shop.index, name='store'),
+    path('cart/', shop.cart, name='cart'),
+    path('checkout/', shop.checkout, name='checkout'),
+    path('update_item/', shop.updateItem, name='updateItem'),
     path('roast/', shop.roast),
     path('flavor/', shop.flavor),
     path('flavor_detail/', shop.flavor_detail),
